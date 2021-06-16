@@ -1,0 +1,70 @@
+CAPI=2:
+
+name : ::another_serv:0
+
+filesets:
+  tb:
+    files:
+      - tb/another_serv_tb.cpp : {file_type : cppSource}
+
+  soc:
+    files:
+      - rtl/another_serv.v : {file_type : verilogSource}
+    depend : [servant]
+
+targets:
+  default:
+    filesets : [soc]
+
+  lint:
+    default_tool : verilator
+    filesets : [soc]
+    tools:
+      verilator:
+        mode : lint-only
+    toplevel : another_serv
+
+  sim:
+    default_tool: verilator
+    filesets : [soc, tb]
+    parameters :
+      - firmware
+      - memsize
+      - timeout
+      - uart_baudrate
+      - vcd
+      - vcd_start
+    tools:
+      verilator:
+        libs: ["\"`sdl2-config --libs`\""]
+        verilator_options : [--trace, -CFLAGS, "`sdl2-config --cflags`"]
+    toplevel : another_serv
+
+parameters:
+  firmware:
+    datatype : file
+    description : Preload RAM with a hex file at runtime (overrides memfile)
+    paramtype : plusarg
+
+  memsize:
+    datatype    : int
+    description : Memory size in bytes for RAM (default 2MiB)
+    paramtype   : vlogparam
+
+  uart_baudrate:
+    datatype : int
+    description : Treat q output as an UART with the specified baudrate (0 or omitted parameter disables UART decoding)
+    paramtype : plusarg
+
+  timeout:
+    datatype : int
+    paramtype : plusarg
+
+  vcd:
+    datatype : bool
+    paramtype : plusarg
+
+  vcd_start:
+    datatype    : int
+    description : Delay start of VCD dumping until the specified time
+    paramtype   : plusarg
